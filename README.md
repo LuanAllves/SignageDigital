@@ -64,5 +64,5 @@ Execute o arquivo main.py:
 python main.py
 ```
 
-Autores
-[LuanAllves]
+Autor
+**WL Services** - **LuanAllves**
