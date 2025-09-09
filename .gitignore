@@ -1,0 +1,19 @@
+# Ignora arquivos de cache do Python e diretórios
+__pycache__/
+*.pyc
+
+# Ignora o banco de dados local
+# O banco de dados SQLite é gerado em tempo de execução e não deve ser versionado
+digital_signage.db
+
+# Ignora as miniaturas de vídeo geradas (se houver)
+# Se você tiver uma pasta para cache de miniaturas, adicione-a aqui
+thumbnails/
+
+# Ignora arquivos específicos de editores de código
+.vscode/
+.idea/
+
+# Ignora arquivos de sistema
+.DS_Store # macOS
+Thumbs.db # Windows
