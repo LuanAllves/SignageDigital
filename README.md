@@ -15,25 +15,25 @@ Este é um projeto de um sistema de Digital Signage (Sinalização Digital) que 
 ## Estrutura do Projeto
 O projeto é modular e organizado para facilitar a manutenção e futuras expansões:
 
-├── digital_signage.db                   # Banco de dados SQLite
+├── **digital_signage.db**                   # Banco de dados SQLite
 
-├── gui/                                 # Pasta com a interface gráfica
+├── **gui/**                                 # Pasta com a interface gráfica
 
-│   ├── main_window.py                   # Lógica da janela principal
+│   ├── **main_window.py**                   # Lógica da janela principal
 
-│   ├── media_display.py                 # Lógica da janela de exibição em tela cheia
+│   ├── **media_display.py**                 # Lógica da janela de exibição em tela cheia
 
-│   ├── media_edit_dialog.py             # Lógica da janela de edição/agendamento
+│   ├── **media_edit_dialog.py**             # Lógica da janela de edição/agendamento
 
-│   └── media_item.py                    # Widget personalizado para cada item da lista
+│   └── **media_item.py**                    # Widget personalizado para cada item da lista
 
-├── utils/                               # Utilitários do projeto
+├── **utils/**                               # Utilitários do projeto
 
-│   └── database.py                      # Gerenciador de conexão com o banco de dados
+│   └── **database.py**                      # Gerenciador de conexão com o banco de dados
 
-├── main.py                              # Ponto de entrada da aplicação
+├── **main.py**                              # Ponto de entrada da aplicação
 
-└── README.md                            # Descrição do projeto
+└── **README.md**                            # Descrição do projeto
 
 
 ## Requisitos
