@@ -1,29 +1,34 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSizePolicy
 from PySide6.QtGui import QPixmap
-from PySide6.QtCore import Qt, QUrl, QTimer
+from PySide6.QtCore import Qt, QUrl, QTimer, Signal
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
 class MediaDisplayWindow(QWidget):
-    def __init__(self, media_list, is_muted_at_start=True):
+    closed = Signal()
+
+    def __init__(self, media_list, is_muted_at_start=True, display_mode="Fullscreen"):
         super().__init__()
         self.media_list = media_list
         self.current_media_index = 0
+        self.display_mode = display_mode # "Fullscreen" ou "Original"
         
         self.setCursor(Qt.BlankCursor)
         self.setStyleSheet("background-color: black;")
-        
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+
+        self.setAttribute(Qt.WA_DontCreateNativeAncestors)
+        self.setAttribute(Qt.WA_NativeWindow)
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
         self.image_label = QLabel()
+        # No Fullscreen, queremos que a imagem ocupe tudo
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setSizePolicy(
-            QSizePolicy.Expanding,
-            QSizePolicy.Expanding
-        )
+        self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # Importante: permitir que o conteúdo estique
+        self.image_label.setScaledContents(True) 
         self.image_label.hide()
 
         self.video_widget = QVideoWidget()
@@ -78,9 +83,18 @@ class MediaDisplayWindow(QWidget):
     def play_image(self, file_path, duration_seconds):
         pixmap = QPixmap(file_path)
         if not pixmap.isNull():
+            if self.display_mode == "Fullscreen":
+                # Ignora a proporção para preencher a tela (causa distorção proposital)
+                aspect_ratio = Qt.IgnoreAspectRatio
+                self.resize(self.screen().size())
+            else:
+                # Mantém o tamanho real da imagem
+                aspect_ratio = Qt.KeepAspectRatio
+                self.resize(pixmap.size())
+
             scaled_pixmap = pixmap.scaled(
-                self.screen().size(), 
-                Qt.KeepAspectRatio, 
+                self.size(), 
+                aspect_ratio, 
                 Qt.SmoothTransformation
             )
             self.image_label.setPixmap(scaled_pixmap)
@@ -90,6 +104,16 @@ class MediaDisplayWindow(QWidget):
 
     def play_video(self, file_path):
         self.media_player.setSource(QUrl.fromLocalFile(file_path))
+        
+        if self.display_mode == "Fullscreen":
+            # Força o vídeo a esticar para preencher o QVideoWidget
+            self.video_widget.setAspectRatioMode(Qt.IgnoreAspectRatio)
+            self.resize(self.screen().size())
+        else:
+            # No modo original, teríamos que ajustar o tamanho da janela 
+            # para o tamanho do vídeo (isso requer metadados do vídeo)
+            self.video_widget.setAspectRatioMode(Qt.KeepAspectRatio)
+            
         self.video_widget.show()
         self.media_player.play()
 
@@ -98,10 +122,15 @@ class MediaDisplayWindow(QWidget):
             self.current_media_index += 1
             self.play_next_media()
 
-    def keyPressEvent(self, event):
+    # Metodo que para o Player ao aperta ESC (Desativada por Padrao)
+    """def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
             self.stop_playback()
-        super().keyPressEvent(event)
+        super().keyPressEvent(event)"""
 
     def set_muted(self, is_muted):
         self.audio_output.setMuted(is_muted)
+
+    def closeEvent(self, event):
+        self.closed.emit()
+        super().closeEvent(event)

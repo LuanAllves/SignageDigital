@@ -6,8 +6,8 @@ from PySide6.QtGui import QPixmap, QColor, QImage
 from PySide6.QtCore import Qt, Signal
 
 # Dimensões padrão para as miniaturas
-THUMBNAIL_WIDTH = 200
-THUMBNAIL_HEIGHT = 150
+THUMBNAIL_WIDTH = 150
+THUMBNAIL_HEIGHT = 100
 VIDEO_THUMBNAIL_FRAME = 5
 
 class MediaItemWidget(QWidget):

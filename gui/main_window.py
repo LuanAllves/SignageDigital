@@ -1,17 +1,24 @@
 import os
+import platform
 import cv2
 from PySide6 import Shiboken
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QPushButton, QLabel, QListWidget, QListWidgetItem, 
                                QStyle, QFileDialog, QButtonGroup, QRadioButton, QApplication)
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QTimer
 from gui.media_item import MediaItemWidget, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT
 from gui.media_edit_dialog import MediaEditDialog
 from gui.media_display import MediaDisplayWindow
 from utils.database import DatabaseManager
 
 class MainWindow(QMainWindow):
+
     def __init__(self):
+        
+        self.media_dir = os.path.join(os.getcwd(), "media_files")
+        if not os.path.exists(self.media_dir):
+            os.makedirs(self.media_dir)
+
         super().__init__()
         self.setWindowTitle("Digital Signage")
         self.setGeometry(100, 100, 800, 600)
@@ -42,12 +49,24 @@ class MainWindow(QMainWindow):
         self.play_button = QPushButton("Play")
         self.stop_button = QPushButton("Stop")
         self.delete_button = QPushButton("Delete")
+        self.stop_button.setDisabled(True)
         self.delete_button.setDisabled(True)
         
         self.audio_button = QPushButton()
         self.audio_button.setFixedSize(30, 30)
         self.audio_button.clicked.connect(self.toggle_audio)
         self.toggle_audio(initial=True) 
+
+        self.mode_group = QButtonGroup(self)
+        self.full_screen_radio = QRadioButton("FullScreen")
+        self.original_radio = QRadioButton("Keep Aspect")
+        
+        self.mode_group.addButton(self.full_screen_radio)
+        self.mode_group.addButton(self.original_radio)
+        self.full_screen_radio.setChecked(True) # Padrão é FullScreen
+        
+        control_layout.addWidget(self.full_screen_radio)
+        control_layout.addWidget(self.original_radio)
 
         self.screen_selector_layout = QHBoxLayout()
         screen_label = QLabel("Selecionar Tela:")
@@ -225,29 +244,73 @@ class MainWindow(QMainWindow):
             self.media_list_widget.takeItem(row)
 
     def play_media(self):
-        media_list = self.db_manager.get_all_medias()
+        # 1. Busca mídias ativas no banco (Filtro de agendamento)
+        media_list = self.db_manager.get_active_medias()
+
         if not media_list:
+            print("Nenhuma mídia ativa para exibir.")
             return
         
+        # 2. Limpeza de segurança: Garante que não existam dois players rodando
         if self.player_window:
-            if Shiboken.isValid(self.player_window): 
-                self.player_window.stop_playback()
-                self.player_window.deleteLater()
+            try:
+                if Shiboken.isValid(self.player_window): 
+                    self.player_window.stop_playback()
+                    self.player_window.deleteLater()
+            except Exception as e:
+                print(f"Erro ao limpar player anterior: {e}")
             self.player_window = None
 
+        # 3. Captura configurações da interface
+        display_mode = "Fullscreen" if self.full_screen_radio.isChecked() else "Original"
         selected_screen = self.get_selected_screen()
-        self.player_window = MediaDisplayWindow(media_list, is_muted_at_start=self.is_muted)
+        screen_geometry = selected_screen.geometry()
+
+        # 4. Instancia o player (sem mostrar ainda)
+        self.player_window = MediaDisplayWindow(
+            media_list, 
+            is_muted_at_start=self.is_muted,
+            display_mode=display_mode
+        )
         
-        if selected_screen:
-            self.player_window.move(selected_screen.geometry().topLeft())
-        
-        self.player_window.showFullScreen()
+        # Conecta o sinal para reativar os botões quando o player fechar
+        self.player_window.closed.connect(lambda: self.update_playback_buttons(False))
+
+        # 5. Lógica de Posicionamento por Sistema Operacional
+        if platform.system() == "Windows":
+            # No Windows, vinculamos a tela e movemos para a coordenada absoluta.
+            # Se a Tela 2 começa em X=1920, move(1920, 0) coloca ela lá instantaneamente.
+            self.player_window.setScreen(selected_screen)
+            self.player_window.move(screen_geometry.topLeft())
+            
+            if display_mode == "Fullscreen":
+                self.player_window.showFullScreen()
+            else:
+                self.player_window.show()
+        else:
+            # No Linux (Wayland/COSMIC), o SO ignora o move().
+            # Tentamos o setScreen, mas o Linux geralmente decide a tela sozinho.
+            self.player_window.setScreen(selected_screen)
+            self.player_window.setGeometry(screen_geometry)
+            
+            if display_mode == "Fullscreen":
+                self.player_window.showFullScreen()
+            else:
+                self.player_window.show()
+            
+            # Força o foco no Linux
+            self.player_window.raise_()
+            self.player_window.activateWindow()
+
+        # 6. Inicia o ciclo de reprodução e atualiza botões
         self.player_window.start_playback()
+        self.update_playback_buttons(True)
 
     def stop_media(self):
         if self.player_window:
             self.player_window.stop_playback()
             self.player_window = None
+        self.update_playback_buttons(False)
 
     def toggle_audio(self, initial=False):
         if not initial:
@@ -261,3 +324,9 @@ class MainWindow(QMainWindow):
 
         if self.player_window:
             self.player_window.set_muted(self.is_muted)
+
+    def update_playback_buttons(self, is_playing):
+        """Ativa/Desativa botões baseado no estado do player."""
+        self.play_button.setDisabled(is_playing)
+        self.stop_button.setEnabled(is_playing)
+        self.upload_button.setDisabled(is_playing)

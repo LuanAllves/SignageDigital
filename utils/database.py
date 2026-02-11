@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 class DatabaseManager:
     def __init__(self, db_name="digital_signage.db"):
@@ -76,3 +77,43 @@ class DatabaseManager:
     def close(self):
         """Fecha a conexão com o banco de dados."""
         self.conn.close()
+
+    def get_active_medias(self):
+        """Retorna apenas as mídias que estão dentro do período de validade."""
+        self.cursor.execute('SELECT * FROM medias')
+        all_medias = self.cursor.fetchall()
+        
+        active_medias = []
+        now = datetime.now()
+
+        for media in all_medias:
+            # Índices: 5=start_date, 6=start_time, 7=end_date, 8=end_time
+            s_date, s_time = media[5], media[6]
+            e_date, e_time = media[7], media[8]
+
+            # Se não tem início definido, consideramos ativa (ou ajuste conforme sua regra)
+            if not s_date:
+                active_medias.append(media)
+                continue
+
+            try:
+                # Converte strings para objetos datetime
+                start_dt = datetime.strptime(f"{s_date} {s_time}", "%dd/%mm/%YYYY %HH:%MM")
+                
+                # Verifica se já começou
+                if now < start_dt:
+                    continue
+
+                # Verifica se tem fim e se já expirou
+                if e_date:
+                    end_dt = datetime.strptime(f"{e_date} {e_time}", "%dd/%mm/%YYYY %HH:%MM")
+                    if now > end_dt:
+                        continue
+                
+                active_medias.append(media)
+            except Exception as e:
+                print(f"Erro ao processar data da mídia {media[0]}: {e}")
+                # Na dúvida, se o formato estiver errado, podemos manter ou pular
+                active_medias.append(media) 
+
+        return active_medias
