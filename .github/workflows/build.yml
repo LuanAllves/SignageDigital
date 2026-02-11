@@ -3,7 +3,10 @@ name: Build Windows Executable
 on:
   push:
     tags:
-      - 'v*' # O build inicia sempre que você criar uma tag começando com 'v' (ex: v1.0.0)
+      - 'v*'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,25 +25,17 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Instalamos diretamente as libs necessárias para garantir o build
         pip install PySide6 opencv-python pyinstaller
 
     - name: Build with PyInstaller
       run: |
-        # --noconsole: Não abre o terminal preto ao iniciar o app
-        # --onefile: Gera apenas um arquivo .exe (mais fácil para o cliente)
-        # --collect-all cv2: Garante que as DLLs de vídeo do OpenCV funcionem no Windows
-        # --add-data: Inclui suas pastas de código (formato "origem;destino")
         python -m PyInstaller --noconsole --onefile --name "SignagePlayer" --add-data "gui;gui" --add-data "utils;utils" --collect-all cv2 main.py
 
     - name: Create Release
-      id: create_release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        # Nome do arquivo que será anexado à release
         files: dist/SignagePlayer.exe
-        # Texto descritivo da release
-        body: "Versão estável gerada automaticamente via GitHub Actions."
+        body: "Build automático para Windows."
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
