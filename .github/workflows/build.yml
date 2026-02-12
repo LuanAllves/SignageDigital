@@ -29,13 +29,19 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        python -m PyInstaller --noconsole --onefile --icon="gui/assets/app_icon.ico" --name "WL SignagePlayer" --add-data "gui;gui" --add-data "utils;utils" --collect-all cv2 main.py
+        python -m PyInstaller --noconsole --onefile `
+        --icon="gui/assets/app_icon.ico" `
+        --name "WL_SignagePlayer" `
+        --add-data "gui;gui" `
+        --add-data "utils;utils" `
+        --collect-all cv2 `
+        main.py
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: dist/SignagePlayer.exe
-        body: "Build automático para Windows."
+        files: dist/WL_SignagePlayer.exe
+        body: "Build automático para Windows. Inclui ícone oficial e splash screen."
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
