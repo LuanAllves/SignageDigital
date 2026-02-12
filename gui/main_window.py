@@ -11,6 +11,7 @@ from gui.media_item import MediaItemWidget, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT
 from gui.media_edit_dialog import MediaEditDialog
 from gui.media_display import MediaDisplayWindow
 from utils.database import DatabaseManager
+from utils.path_helper import get_resource_path
 
 class MainWindow(QMainWindow):
 
@@ -21,8 +22,7 @@ class MainWindow(QMainWindow):
             os.makedirs(self.media_dir)
 
         super().__init__()
-        icon_path = os.path.join("gui", "assets", "app_icon.ico")
-
+        icon_path = get_resource_path(os.path.join("gui", "assets", "app_icon.ico"))
         self.setWindowTitle("Digital Signage")
         self.setGeometry(100, 100, 800, 600)
         self.setWindowIcon(QIcon(icon_path))

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import Qt, QTimer
 from gui.main_window import MainWindow
+from utils.path_helper import get_resource_path
 import ctypes
 import platform
 
@@ -12,8 +13,11 @@ if platform.system() == "Windows":
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
-    pixmap = QPixmap(os.path.join("gui", "assets", "splash.png"))
+
+    splash_path = get_resource_path(os.path.join("gui", "assets", "logo.png"))
+    icon_path = get_resource_path(os.path.join("gui", "assets", "app_icon.ico"))
+
+    pixmap = QPixmap(splash_path)
     splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
     splash.setAttribute(Qt.WA_TranslucentBackground)
     splash.show()

@@ -1,4 +1,4 @@
-name: Build Windows Executable
+name: Build Multi-platform Executables
 
 on:
   push:
@@ -9,24 +9,19 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  # --- JOB PARA WINDOWS ---
+  build-windows:
     runs-on: windows-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        cache: 'pip'
-
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
         pip install PySide6 opencv-python pyinstaller
-
     - name: Build with PyInstaller
       run: |
         python -m PyInstaller --noconsole --onefile `
@@ -36,12 +31,76 @@ jobs:
         --add-data "utils;utils" `
         --collect-all cv2 `
         main.py
-
-    - name: Create Release
+    - name: Upload Windows Asset
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: dist/WL_SignagePlayer.exe
-        body: "Build automático para Windows. Inclui ícone oficial e splash screen."
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # --- JOB PARA LINUX (.DEB) ---
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: |
+        pip install PySide6 opencv-python pyinstaller
+    - name: Build Linux Executable
+      run: |
+        python -m PyInstaller --noconsole --onefile \
+        --name "wl-signageplayer" \
+        --add-data "gui:gui" \
+        --add-data "utils:utils" \
+        --collect-all cv2 \
+        main.py
+    - name: Create .deb Structure
+      run: |
+        mkdir -p package/usr/bin
+        mkdir -p package/usr/share/applications
+        mkdir -p package/usr/share/pixmaps
+        mkdir -p package/DEBIAN
+        
+        # Copia executável e ícone
+        cp dist/wl-signageplayer package/usr/bin/
+        cp gui/assets/logo.png package/usr/share/pixmaps/wl-signage.png
+        
+        # Permissão de execução
+        chmod +x package/usr/bin/wl-signageplayer
+        
+        # Arquivo de Controle (Metadata)
+        cat <<EOF > package/DEBIAN/control
+        Package: wl-signageplayer
+        Version: ${GITHUB_REF_NAME#v}
+        Section: utils
+        Priority: optional
+        Architecture: amd64
+        Maintainer: WL Informatica
+        Description: Digital Signage Player profissional da WL Informatica.
+        EOF
+        
+        # Atalho do Menu (.desktop)
+        cat <<EOF > package/usr/share/applications/wl-signageplayer.desktop
+        [Desktop Entry]
+        Name=WL SignagePlayer
+        Comment=Player de Sinalização Digital
+        Exec=/usr/bin/wl-signageplayer
+        Icon=/usr/share/pixmaps/wl-signage.png
+        Type=Application
+        Terminal=false
+        Categories=Video;Utility;
+        EOF
+        
+        # Build do pacote
+        dpkg-deb --build package wl-signageplayer.deb
+    - name: Upload Linux Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        files: wl-signageplayer.deb
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
