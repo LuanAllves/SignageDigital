@@ -20,6 +20,7 @@ O projeto é modular e organizado para facilitar a manutenção e futuras expans
 ```
 ├── **digital_signage.db**           --->  Banco de dados SQLite
 ├── **gui/**                         --->  Pasta com a interface gráfica
+│   ├── **assets**                   --->  Arquivos 
 │   ├── **main_window.py**           --->  Lógica da janela principal
 │   ├── **media_display.py**         --->  Lógica da janela de exibição em tela cheia
 │   ├── **media_edit_dialog.py**     --->  Lógica da janela de edição/agendamento

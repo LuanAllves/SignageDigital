@@ -5,7 +5,8 @@ from PySide6 import Shiboken
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QPushButton, QLabel, QListWidget, QListWidgetItem, 
                                QStyle, QFileDialog, QButtonGroup, QRadioButton, QApplication)
-from PySide6.QtCore import Qt, QSize, QTimer
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QIcon
 from gui.media_item import MediaItemWidget, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT
 from gui.media_edit_dialog import MediaEditDialog
 from gui.media_display import MediaDisplayWindow
@@ -20,8 +21,11 @@ class MainWindow(QMainWindow):
             os.makedirs(self.media_dir)
 
         super().__init__()
+        icon_path = os.path.join("gui", "assets", "app_icon.ico")
+
         self.setWindowTitle("Digital Signage")
         self.setGeometry(100, 100, 800, 600)
+        self.setWindowIcon(QIcon(icon_path))
         self.db_manager = DatabaseManager()
         self.player_window = None 
         self.is_muted = True

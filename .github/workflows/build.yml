@@ -29,7 +29,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        python -m PyInstaller --noconsole --onefile --name "SignagePlayer" --add-data "gui;gui" --add-data "utils;utils" --collect-all cv2 main.py
+        python -m PyInstaller --noconsole --onefile --icon="gui/assets/app_icon.ico" --name "WL SignagePlayer" --add-data "gui;gui" --add-data "utils;utils" --add-data "gui/assets/app_icon.icon;gui/assets" --collect-all cv2 main.py
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
