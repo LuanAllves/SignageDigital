@@ -25,10 +25,11 @@ jobs:
     - name: Build with PyInstaller
       run: |
         python -m PyInstaller --noconsole --onefile `
-        --icon="gui/assets/app_icon.ico" `
-        --name "WL_SignagePlayer" `
+        --icon="data/assets/logo.png" `
+        --name "SignagePlayer" `
         --add-data "gui;gui" `
         --add-data "utils;utils" `
+        --add-data "data;data" `
         --collect-all cv2 `
         main.py
     - name: Upload Windows Asset
@@ -54,9 +55,10 @@ jobs:
     - name: Build Linux Executable
       run: |
         python -m PyInstaller --noconsole --onefile \
-        --name "wl-signageplayer" \
+        --name "signageplayer" \
         --add-data "gui:gui" \
         --add-data "utils:utils" \
+        --add-data "data:data" \
         --collect-all cv2 \
         main.py
     - name: Create .deb Structure
@@ -67,11 +69,11 @@ jobs:
         mkdir -p package/DEBIAN
         
         # Copia executável e ícone
-        cp dist/wl-signageplayer package/usr/bin/
-        cp gui/assets/logo.png package/usr/share/pixmaps/wl-signage.png
+        cp dist/signageplayer package/usr/bin/
+        cp data/assets/logo.png package/usr/share/pixmaps/signageplayer.png
         
         # Permissão de execução
-        chmod +x package/usr/bin/wl-signageplayer
+        chmod +x package/usr/bin/signageplayer
         
         # Arquivo de Controle (Metadata)
         cat <<EOF > package/DEBIAN/control
@@ -85,12 +87,12 @@ jobs:
         EOF
         
         # Atalho do Menu (.desktop)
-        cat <<EOF > package/usr/share/applications/wl-signageplayer.desktop
+        cat <<EOF > package/usr/share/applications/signageplayer.desktop
         [Desktop Entry]
-        Name=WL SignagePlayer
+        Name=SignagePlayer
         Comment=Player de Sinalização Digital
-        Exec=/usr/bin/wl-signageplayer
-        Icon=/usr/share/pixmaps/wl-signage.png
+        Exec=/usr/bin/signageplayer
+        Icon=signageplayer
         Type=Application
         Terminal=false
         Categories=Video;Utility;

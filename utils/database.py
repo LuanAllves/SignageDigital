@@ -1,9 +1,15 @@
 import sqlite3
 from datetime import datetime
+import os
+from utils.path_helper import get_data_path
 
 class DatabaseManager:
-    def __init__(self, db_name="digital_signage.db"):
-        self.db_name = db_name
+    def __init__(self, db_name=None):
+        if db_name is None:
+            self.db_name = get_data_path(os.path.join("digital_signage.db"))
+        else:
+            self.db_name = db_name
+
         self.conn = None
         self.cursor = None
         self.connect()

@@ -11,19 +11,19 @@ from gui.media_item import MediaItemWidget, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT
 from gui.media_edit_dialog import MediaEditDialog
 from gui.media_display import MediaDisplayWindow
 from utils.database import DatabaseManager
-from utils.path_helper import get_resource_path
+from utils.path_helper import get_resource_path, get_data_path
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         
-        self.media_dir = os.path.join(os.getcwd(), "media_files")
+        self.media_dir = get_data_path("media_files")
         if not os.path.exists(self.media_dir):
             os.makedirs(self.media_dir)
 
         super().__init__()
-        icon_path = get_resource_path(os.path.join("gui", "assets", "app_icon.ico"))
-        self.setWindowTitle("Digital Signage")
+        icon_path = get_resource_path(os.path.join("data", "assets", "logo.png"))
+        self.setWindowTitle("Sigange Player - Gerenciador de Mídias")
         self.setGeometry(100, 100, 800, 600)
         self.setWindowIcon(QIcon(icon_path))
         self.db_manager = DatabaseManager()

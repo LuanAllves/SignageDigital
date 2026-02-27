@@ -14,8 +14,7 @@ if platform.system() == "Windows":
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    splash_path = get_resource_path(os.path.join("gui", "assets", "logo.png"))
-    icon_path = get_resource_path(os.path.join("gui", "assets", "app_icon.ico"))
+    splash_path = get_resource_path(os.path.join("data", "assets", "logo.png"))
 
     pixmap = QPixmap(splash_path)
     splash = QSplashScreen(pixmap, Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
