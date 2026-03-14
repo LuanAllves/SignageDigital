@@ -1,0 +1,47 @@
+[tool.briefcase]
+project_name = "WL Signage Player"
+bundle = "online.wlservices"
+version = "1.1.0"
+url = "https://wlservices.online"
+author = "WL - Luan Alves"
+author_email = "luan_dev@outlook.com.br"
+
+[tool.briefcase.app.signage_player]
+formal_name = "WL Signage Player"
+description = "Sistema de Sinalizacao Digital"
+sources = ["src/signage_player"]
+license.text = "MIT"
+
+# Dependências comuns para todas as plataformas
+requires = [
+    "requests",
+    "opencv-contrib-python-headless",
+]
+
+[tool.briefcase.app.signage_player.macOS]
+requires = ["toga-cocoa~=0.4.0"]
+
+[tool.briefcase.app.signage_player.linux]
+requires = ["toga-gtk~=0.4.0"]
+
+[tool.briefcase.app.signage_player.windows]
+requires = ["toga-winforms~=0.4.0"]
+
+[tool.briefcase.app.signage_player.android]
+# Dependência específica do Android
+requires = ["toga-android~=0.4.0"]
+
+build_gradle_dependencies = [
+    "androidx.appcompat:appcompat:1.6.1",
+    "androidx.constraintlayout:constraintlayout:2.1.4",
+    "com.google.android.material:material:1.9.0",
+]
+
+permissions = [
+    "INTERNET",
+    "READ_EXTERNAL_STORAGE",
+    "WRITE_EXTERNAL_STORAGE",
+]
+
+android_app_module = "signage_player"
+android_sdk_version = "26"
